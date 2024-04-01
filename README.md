@@ -18,6 +18,6 @@ Ejemplo:
     1-11 : (11, 15)
 ```
 
-o en imagen:
+o en imagen: \n
 ![Ejemplo:](imagenes/ejemplo.png)
 
