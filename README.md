@@ -19,5 +19,5 @@ Ejemplo:
 ```
 
 o en imagen:
-![Logo de mi proyecto](imagenes/ejemplo.png)
+![Ejemplo:](imagenes/ejemplo.png)
 
