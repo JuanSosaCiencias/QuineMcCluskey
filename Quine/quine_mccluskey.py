@@ -54,9 +54,7 @@ def obtener_implicantes_primos(minterminos, num_vars):
     """
     Obtiene los implicantes primos a partir de los minterminos, basicamente combinando a los minterminos
     para obtener los implicantes primos esto usando la cantidad de unos en la representación binaria de los minterminos.
-    Despues obtiene los implicantes primos esenciales basicamente eliminando los implicantes primos que estan cubiertos
-    por otros implicantes primos, aprovechandose de que los implicantes primos son una tupla con si mismos y los minterminos
-    que cubren.
+    Despues obtiene los implicantes primos esenciales basicamente eliminando los implicantes primos que estan cubiertos.
 
     Args:
         minterminos (list): Lista de minterminos.
@@ -94,22 +92,61 @@ def obtener_implicantes_primos(minterminos, num_vars):
         implicantes_primos = nuevos_implicantes_primos.copy()
 
     # Identificar implicantes primos esenciales
-    implicantes_primos_ordenados = sorted(implicantes_primos, key=lambda x: x[0]) # Ordenar por número de unos
-    implicantes_primos_esenciales = [] 
+    return encontrar_implicantes_primos_esenciales(implicantes_primos)
 
-    for imp in implicantes_primos_ordenados: 
-        mintermino_cubierto = imp[1][0] 
-        cubierto_por_otro = False   
+def encontrar_implicantes_primos_esenciales(implicantes_primos):
+    """
+    Encuentra los implicantes primos esenciales de un conjunto de implicantes primos.
 
-        for otro_imp in implicantes_primos_ordenados: 
-            if otro_imp != imp and mintermino_cubierto in otro_imp[1]: 
-                cubierto_por_otro = True
-                break
+    Un implicante primo es esencial si es el único que cubre al menos un mintermino. Esta función
+    también verifica si, después de seleccionar los implicantes esenciales, hay minterminos que no están cubiertos.
+    En tal caso, determina cuáles de los implicantes no esenciales son necesarios para cubrir todos los minterminos.
 
-        if not cubierto_por_otro:
-            implicantes_primos_esenciales.append(imp)
+    Args:
+    implicantes_primos (set of tuples): Un conjunto de implicantes primos, donde cada implicante
+                                       es una tupla que contiene una representación binaria y
+                                       una tupla de los minterminos que cubre.
 
-    return implicantes_primos_esenciales
+    Returns:
+    set: Un conjunto de implicantes primos esenciales.
+    """
+
+    # Diccionario para mapear cada mintermino a los implicantes que lo cubren
+    # me di cuenta hasta despues
+    cobertura_minterminos = {}
+
+    # Llenar el diccionario con los minterminos y los implicantes que los cubren
+    for implicante in implicantes_primos:
+        for mintermino in implicante[1]:
+            if mintermino not in cobertura_minterminos:
+                cobertura_minterminos[mintermino] = set()
+            cobertura_minterminos[mintermino].add(implicante)
+
+    # Identificar implicantes primos esenciales
+    implicantes_esenciales = set()
+    for implicantes in cobertura_minterminos.values():
+        if len(implicantes) == 1:
+            implicante_esencial = next(iter(implicantes))
+            implicantes_esenciales.add(implicante_esencial)
+
+    # Verificar cobertura de minterminos por los esenciales
+    minterminos_cubiertos = set()
+    for implicante in implicantes_esenciales:
+        minterminos_cubiertos.update(implicante[1])
+    
+    # Añadir implicantes necesarios si hay minterminos no cubiertos, me quitaba de mas
+    if len(minterminos_cubiertos) < len(cobertura_minterminos):
+        for implicante in (implicantes_primos - implicantes_esenciales):
+            es_necesario = False
+            for mintermino in implicante[1]:
+                if mintermino not in minterminos_cubiertos:
+                    es_necesario = True
+                    break
+            if es_necesario:
+                implicantes_esenciales.add(implicante)
+                minterminos_cubiertos.update(implicante[1])
+
+    return implicantes_esenciales
 
 def main():
     """
